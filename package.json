@@ -1,0 +1,25 @@
+{
+    "name": "com.adrianyip.ui",
+    "version": "0.1.0",
+    "displayName": "AYip UI Management",
+    "description": "It is a package to manage pop ups and pages with prefab management.",
+    "unity": "2019.1",
+    "documentationUrl": "https://github.com/adrianyip-1222/ayip-package-ui",
+    "changelogUrl": "https://github.com/adrianyip-1222/ayip-package-ui/blob/0.1.0/CHANGELOG.md",
+    "licensesUrl": "https://github.com/adrianyip-1222/ayip-package-ui/blob/0.1.0/LICENSE",
+    "dependencies":
+    {},
+    "keywords":
+    [
+        "pop",
+        "up",
+        "page",
+        "manage"
+    ],
+    "author":
+    {
+        "name": "Yip Ka Ming",
+        "email": "adrianyip1222@gmail.com",
+        "url": "https://github.com/adrianyip-1222/"
+    }
+}
