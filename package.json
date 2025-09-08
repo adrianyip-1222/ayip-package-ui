@@ -21,5 +21,13 @@
         "name": "Yip Ka Ming",
         "email": "adrianyip1222@gmail.com",
         "url": "https://github.com/adrianyip-1222/"
-    }
+    },
+    "samples":
+    [
+        {
+            "displayName": "VContainer Support",
+            "description": "Import this package for the implementation of VContainer.",
+            "path": "Samples~/VContainer Support"
+        }
+    ]
 }
