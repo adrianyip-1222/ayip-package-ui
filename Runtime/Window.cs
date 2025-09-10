@@ -6,6 +6,7 @@ namespace AYip.UI
 	public abstract class Window : MonoBehaviour, IWindow
 	{
 		public abstract Guid Id { get; }
+		public GameObject GameObject => gameObject;
 		public IWindowModal LoadedModal { get; protected set; }
 		public bool Visibility { get; set; }
 		public abstract void Close();

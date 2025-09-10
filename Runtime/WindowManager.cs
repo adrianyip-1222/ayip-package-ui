@@ -43,21 +43,29 @@ namespace AYip.UI
 		/// </summary>
 		protected IWindowFactory WindowFactory { get; }
 	}
-	
+
 	/// <summary>
 	/// A generic window manager that manages windows and modals of specific types.
 	/// </summary>
 	/// <typeparam name="TPrefabKey">The prefab key type used to get the prefab from the database.</typeparam>
+	/// <typeparam name="TWindow">The type of window to manage.</typeparam>
 	/// <typeparam name="TIEnumerable">The type of the enumerable collection that holds the windows and modals.</typeparam>
 	/// <typeparam name="TPushable">The type of the windows and modals that can be pushed to the collection.</typeparam>
 	/// <typeparam name="TModal">The type of modal to create a window.</typeparam>
-	public abstract class WindowManager<TPrefabKey, TIEnumerable, TPushable, TModal> : WindowManager
+	public abstract class WindowManager<TPrefabKey, TWindow, TIEnumerable, TPushable, TModal> : WindowManager
+		where TWindow : IWindow<TPrefabKey, TWindow, TModal>
 		where TIEnumerable : IEnumerable<TPushable>, new()
 		where TModal : IWindowModal<TPrefabKey>, TPushable
 	{
 		protected WindowManager(RectTransform canvasRoot, IWindowStateEventHandler windowStateEventHandler, IWindowFactory windowFactory) 
 			: base(canvasRoot, windowStateEventHandler, windowFactory)
 		{ }
+
+		public new TWindow CurrentWindow
+		{
+			get => (TWindow)base.CurrentWindow;
+			protected set => base.CurrentWindow = value;
+		}
 
 		protected new TIEnumerable WindowCollection
 		{
@@ -71,17 +79,10 @@ namespace AYip.UI
 		/// <param name="modal">The modal to show the window</param>
 		/// <param name="createdWindow">The created window, can be null if there is a window showing.</param>
 		/// <returns>If the window was shown immediately.</returns>
-		protected bool TryShowWindowBy(TModal modal, out IWindow createdWindow)
+		protected abstract bool TryShowWindowBy(TModal modal, out TWindow createdWindow);
+
+		protected TWindow CreateWindowBy(TModal modal)
 		{
-			createdWindow = null;
-			
-			// If there is a window showing.
-			if (CurrentWindow != null)
-			{
-				AddToCollection(modal);
-				return false;
-			}
-			
 			// Create the window with the model.
 			var baseWindow = WindowFactory.Create(modal, CanvasRoot);
 			
@@ -89,8 +90,7 @@ namespace AYip.UI
 			var eventSubscriptionDto = new EventSubscriptionDTO(baseWindow, WindowState.Closed, OnWindowClosed);
 			WindowStateEventHandler.Subscribe(eventSubscriptionDto);
 			
-			CurrentWindow = baseWindow;
-			return true;
+			return (TWindow) baseWindow;
 		}
 
 		protected abstract void AddToCollection(TPushable windowOrModal);
@@ -102,7 +102,10 @@ namespace AYip.UI
 		{
 			// Prepare the event and subscribe to it.
 			WindowStateEventHandler.Unsubscribe(CurrentWindow);
-			CurrentWindow = null;
+			
+			// Destroy the window instance.
+			Object.Destroy(window.GameObject);
+			CurrentWindow = default;
 			
 			if (!TryRetrieveNextWindowOrModal(out var nextWindowOrModal))
 			{
@@ -115,7 +118,7 @@ namespace AYip.UI
 					TryShowWindowBy(nextModal, out _);
 					return;
 				
-				case IWindow nextWindow:
+				case TWindow nextWindow:
 					nextWindow.Visibility = true;
 					WindowStateEventHandler.Subscribe(new EventSubscriptionDTO(window, WindowState.Closed, OnWindowClosed));
 					

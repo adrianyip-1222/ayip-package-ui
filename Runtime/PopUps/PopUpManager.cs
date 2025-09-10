@@ -9,7 +9,8 @@ namespace AYip.UI.PopUps
     /// This manager allows for showing pop-ups immediately if no other pop-up is currently active,
     /// or queuing them for later display if a pop-up is already showing.
     /// </summary>
-    public abstract class PopUpManager<TPrefabKey, TModal> : WindowManager<TPrefabKey, Queue<IQueueable>, IQueueable, TModal>
+    public abstract class PopUpManager<TPrefabKey, TPopUp, TModal> : WindowManager<TPrefabKey, TPopUp, Queue<IQueueable>, IQueueable, TModal>
+        where TPopUp : IPopUp<TPrefabKey, TPopUp, TModal>
         where TModal : IPopUpModal<TPrefabKey>
     {
         protected PopUpManager(
@@ -36,6 +37,22 @@ namespace AYip.UI.PopUps
             }
 
             createdPopUp = (IPopUp) window;
+            return true;
+        }
+
+        protected override bool TryShowWindowBy(TModal modal, out TPopUp createdPopUp)
+        {
+            createdPopUp = default;
+			
+            // If there is a pop-up showing, enqueue the model.
+            if (CurrentWindow != null)
+            {
+                AddToCollection(modal);
+                return false;
+            }
+
+            var baseWindow = CreateWindowBy(modal);
+            CurrentWindow = baseWindow;
             return true;
         }
 
