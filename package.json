@@ -8,7 +8,9 @@
     "changelogUrl": "https://github.com/adrianyip-1222/ayip-package-ui/blob/0.1.0/CHANGELOG.md",
     "licensesUrl": "https://github.com/adrianyip-1222/ayip-package-ui/blob/0.1.0/LICENSE",
     "dependencies":
-    {},
+    {
+        "com.adrianyip.foundation": "1.0.0"
+    },
     "keywords":
     [
         "pop",
