@@ -7,7 +7,6 @@ namespace AYip.UI
     /// </summary>
     public interface IWindowFactory
     {
-        IWindow Create<TModal>(TModal modal, RectTransform canvasRoot) 
-            where TModal : IWindowModal;
+        IWindow Create<TModal>(TModal modal, RectTransform canvasRoot) where TModal : IWindowModal;
     }
 }

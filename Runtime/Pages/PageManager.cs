@@ -10,16 +10,30 @@ namespace AYip.UI.Pages
     /// or stacking them for later display if a page is already showing.
     /// </summary>
     public abstract class PageManager<TPrefabKey, TPage, TModal> : WindowManager<TPrefabKey, TPage, Stack<IStackable>, IStackable, TModal>
-        where TPage : IPage<TPrefabKey, TPage, TModal>
+        where TPage : IPage<TPrefabKey, TModal>
         where TModal : IPageModal<TPrefabKey>
     {
         protected PageManager(
-            RectTransform canvasRoot,
+            RectTransform defaultCanvasRoot,
             IWindowStateEventHandler windowStateEventHandler,
             IWindowFactory windowFactory)
-            : base(canvasRoot, windowStateEventHandler, windowFactory)
+            : base(defaultCanvasRoot, windowStateEventHandler, windowFactory)
         {
-            WindowCollection = new Stack<IStackable>();
+            WindowContainer = new Stack<IStackable>();
+        }
+
+        /// <summary>
+        /// The count of the pages or modals in the stack at the back.
+        /// </summary>
+        public override int StackCounts => WindowContainer.Count;
+
+        /// <summary>
+        /// Show the page immediately and stack up the current page if any. (Show and forget pattern)
+        /// </summary>
+        /// <param name="modal">The modal of the page</param>
+        public void Show(TModal modal, RectTransform overrideCanvasRoot = null)
+        {
+            Show(modal, out _, overrideCanvasRoot);
         }
 		
         /// <summary>
@@ -27,7 +41,7 @@ namespace AYip.UI.Pages
         /// </summary>
         /// <param name="modal">The modal of the page</param>
         /// <param name="showedPage">The page to show.</param>
-        public void Show(TModal modal, out IPage showedPage)
+        public void Show(TModal modal, out IPage showedPage, RectTransform overrideCanvasRoot = null)
         {
             showedPage = null; 
             
@@ -48,37 +62,37 @@ namespace AYip.UI.Pages
                 }
             }
             
-            if (!TryShowWindowBy(modal, out var window))
+            if (!TryShowWindowBy(modal, out var window, overrideCanvasRoot))
             {
                 return;
             }
 
             CurrentWindow = window;
-            showedPage = (IPage) window;
+            showedPage = window;
         }
 
-        protected override bool TryShowWindowBy(TModal modal, out TPage createPage)
+        protected override bool TryShowWindowBy(TModal modal, out TPage createPage, RectTransform overrideCanvasRoot = null)
         {
-            var window = CreateWindowBy(modal);
+            var window = CreateWindowBy(modal, overrideCanvasRoot);
             createPage = window;
             return true;
         }
 
         protected override void AddToCollection(IStackable windowOrModal)
         {
-            WindowCollection.Push(windowOrModal);
+            WindowContainer.Push(windowOrModal);
         }
 
         protected override bool TryRetrieveNextWindowOrModal(out IStackable nextWindowOrModal)
         {
             nextWindowOrModal = null;
             
-            if (WindowCollection.Count == 0)
+            if (WindowContainer.Count == 0)
             {
                 return false;
             }
             
-            nextWindowOrModal = WindowCollection.Pop();
+            nextWindowOrModal = WindowContainer.Pop();
             return true;
         }
     }

@@ -17,8 +17,7 @@ namespace AYip.UI
 		}
 	}
 	
-	public abstract class Window<TPrefabKey, TWindow, TModal> : Window, IWindow<TPrefabKey, TWindow, TModal>
-		where TWindow : IWindow<TPrefabKey, TWindow, TModal>
+	public abstract class Window<TPrefabKey, TModal> : Window, IWindow<TPrefabKey, TModal>
 		where TModal : IWindowModal<TPrefabKey>
 	{
 		public override Guid Id { get; } = Guid.NewGuid();

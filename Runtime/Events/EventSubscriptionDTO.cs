@@ -29,10 +29,5 @@ namespace AYip.UI.Events
         /// The callback to invoke when the state changes.
         /// </summary>
         public UnityAction<IWindow> OnStateChanged { get; }
-
-        public bool Equals(IWindow other)
-        {
-            return false;
-        }
     }
 }

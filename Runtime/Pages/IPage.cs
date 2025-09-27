@@ -14,7 +14,6 @@ namespace AYip.UI.Pages
 	/// <summary>
 	/// A generic interface for pages with specified prefab key, page type, and modal type.
 	/// </summary>
-	public interface IPage<TPrefabKey, TPage, out TModal> : IPage, IWindow<TPrefabKey, TPage, TModal>
-		where TModal : IPageModal<TPrefabKey>
-		where TPage : IPage<TPrefabKey, TPage, TModal> { }
+	public interface IPage<TPrefabKey, out TModal> : IPage, IWindow<TPrefabKey, TModal>
+		where TModal : IPageModal<TPrefabKey> { }
 }

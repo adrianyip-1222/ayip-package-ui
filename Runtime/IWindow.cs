@@ -12,9 +12,8 @@ namespace AYip.UI
 		void Close();
 	}
 
-	public interface IWindow<TPrefabKey, TWindow, out TModal> : IWindow
+	public interface IWindow<TPrefabKey, out TModal> : IWindow
 		where TModal : IWindowModal<TPrefabKey>
-		where TWindow : IWindow<TPrefabKey, TWindow, TModal>
 	{
 		new TModal LoadedModal { get; }
 	}

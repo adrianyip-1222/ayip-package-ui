@@ -11,9 +11,9 @@ namespace AYip.UI
 	/// </summary>
 	public abstract class WindowManager : DisposableBase
 	{
-		protected WindowManager(RectTransform canvasRoot, IWindowStateEventHandler windowStateEventHandler, IWindowFactory windowFactory)
+		protected WindowManager(RectTransform defaultCanvasRoot, IWindowStateEventHandler windowStateEventHandler, IWindowFactory windowFactory)
 		{
-			CanvasRoot = canvasRoot;
+			DefaultCanvasRoot = defaultCanvasRoot;
 			WindowStateEventHandler = windowStateEventHandler;
 			WindowFactory = windowFactory;
 		}
@@ -22,6 +22,11 @@ namespace AYip.UI
 		/// The currently active window.
 		/// </summary>
 		public IWindow CurrentWindow { get; protected set; }
+		
+		/// <summary>
+		/// The count of windows managed by this manager.
+		/// </summary>
+		public abstract int StackCounts { get; }
 
 		/// <summary>
 		/// The collection of windows managed by this manager.
@@ -31,7 +36,7 @@ namespace AYip.UI
 		/// <summary>
 		/// The canvas root to instantiate the windows to.
 		/// </summary>
-		protected RectTransform CanvasRoot { get; }
+		protected RectTransform DefaultCanvasRoot { get; }
 
 		/// <summary>
 		/// The handler to manage state events publish and subscribe.
@@ -53,12 +58,12 @@ namespace AYip.UI
 	/// <typeparam name="TPushable">The type of the windows and modals that can be pushed to the collection.</typeparam>
 	/// <typeparam name="TModal">The type of modal to create a window.</typeparam>
 	public abstract class WindowManager<TPrefabKey, TWindow, TIEnumerable, TPushable, TModal> : WindowManager
-		where TWindow : IWindow<TPrefabKey, TWindow, TModal>
+		where TWindow : IWindow<TPrefabKey, TModal>
 		where TIEnumerable : IEnumerable<TPushable>, new()
 		where TModal : IWindowModal<TPrefabKey>, TPushable
 	{
-		protected WindowManager(RectTransform canvasRoot, IWindowStateEventHandler windowStateEventHandler, IWindowFactory windowFactory) 
-			: base(canvasRoot, windowStateEventHandler, windowFactory)
+		protected WindowManager(RectTransform defaultCanvasRoot, IWindowStateEventHandler windowStateEventHandler, IWindowFactory windowFactory) 
+			: base(defaultCanvasRoot, windowStateEventHandler, windowFactory)
 		{ }
 
 		public new TWindow CurrentWindow
@@ -67,7 +72,7 @@ namespace AYip.UI
 			protected set => base.CurrentWindow = value;
 		}
 
-		protected new TIEnumerable WindowCollection
+		protected new TIEnumerable WindowContainer
 		{
 			get => (TIEnumerable)base.WindowCollection;
 			set => base.WindowCollection = value;
@@ -78,13 +83,14 @@ namespace AYip.UI
 		/// </summary>
 		/// <param name="modal">The modal to show the window</param>
 		/// <param name="createdWindow">The created window, can be null if there is a window showing.</param>
+		/// <param name="overrideCanvasRoot">The canvas root to override the default one.</param>
 		/// <returns>If the window was shown immediately.</returns>
-		protected abstract bool TryShowWindowBy(TModal modal, out TWindow createdWindow);
+		protected abstract bool TryShowWindowBy(TModal modal, out TWindow createdWindow, RectTransform overrideCanvasRoot = null);
 
-		protected TWindow CreateWindowBy(TModal modal)
+		protected TWindow CreateWindowBy(TModal modal, RectTransform overrideCanvasRoot = null)
 		{
 			// Create the window with the model.
-			var baseWindow = WindowFactory.Create(modal, CanvasRoot);
+			var baseWindow = WindowFactory.Create(modal, overrideCanvasRoot? overrideCanvasRoot : DefaultCanvasRoot);
 			
 			// Prepare the event and subscribe to it.
 			var eventSubscriptionDto = new EventSubscriptionDTO(baseWindow, WindowState.Closed, OnWindowClosed);
@@ -115,7 +121,8 @@ namespace AYip.UI
 			switch (nextWindowOrModal)
 			{
 				case TModal nextModal:
-					TryShowWindowBy(nextModal, out _);
+					TryShowWindowBy(nextModal, out var createdWindow);
+					CurrentWindow = createdWindow;
 					return;
 				
 				case TWindow nextWindow:
