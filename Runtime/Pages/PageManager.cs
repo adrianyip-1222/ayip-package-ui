@@ -5,80 +5,94 @@ using UnityEngine;
 namespace AYip.UI.Pages
 {
     /// <summary>
-    /// A manager for pages that handles showing and stacking them based on their modals.
+    /// A manager for pages that handles showing and stacking them based on their models.
     /// This manager allows for showing pages immediately if no other page is currently active,
     /// or stacking them for later display if a page is already showing.
     /// </summary>
-    public abstract class PageManager<TPrefabKey, TPage, TModal> : WindowManager<TPrefabKey, TPage, Stack<IStackable>, IStackable, TModal>
-        where TPage : IPage<TPrefabKey, TPage, TModal>
-        where TModal : IPageModal<TPrefabKey>
+    public abstract class PageManager<TPrefabKey, TPage, TModel> : ViewManager<TPrefabKey, TPage, Stack<IStackable>, IStackable, TModel>
+        where TPage : IPage<TPrefabKey, TModel>
+        where TModel : IPageModel<TPrefabKey>
     {
         protected PageManager(
-            RectTransform canvasRoot,
-            IWindowStateEventHandler windowStateEventHandler,
-            IWindowFactory windowFactory)
-            : base(canvasRoot, windowStateEventHandler, windowFactory)
+            RectTransform defaultCanvasRoot,
+            IHandler viewStateEventHandler,
+            IViewFactory viewFactory)
+            : base(defaultCanvasRoot, viewStateEventHandler, viewFactory)
         {
-            WindowCollection = new Stack<IStackable>();
+            ViewContainer = new Stack<IStackable>();
+        }
+
+        /// <summary>
+        /// The count of the pages or models in the stack at the back.
+        /// </summary>
+        public override int StackCounts => ViewContainer.Count;
+
+        /// <summary>
+        /// Show the page immediately and stack up the current page if any. (Show and forget pattern)
+        /// </summary>
+        /// <param name="model">The model of the page</param>
+        public void Show(TModel model, RectTransform overrideCanvasRoot = null)
+        {
+            Show(model, out _, overrideCanvasRoot);
         }
 		
         /// <summary>
         /// Show the page immediately and stack up the current page if any.
         /// </summary>
-        /// <param name="modal">The modal of the page</param>
+        /// <param name="model">The model of the page</param>
         /// <param name="showedPage">The page to show.</param>
-        public void Show(TModal modal, out IPage showedPage)
+        public void Show(TModel model, out IPage showedPage, RectTransform overrideCanvasRoot = null)
         {
             showedPage = null; 
             
             // If there is a current page shown, stack it up.
-            if (CurrentWindow != null)
+            if (CurrentView != null)
             {
                 // Handle how to stack up the current page.
-                if (CurrentWindow.IsProtected)
+                if (CurrentView.IsProtected)
                 {
-                    AddToCollection(CurrentWindow);
+                    AddToCollection(CurrentView);
                 }
                 else
                 {
-                    AddToCollection(CurrentWindow.LoadedModal);
+                    AddToCollection(CurrentView.LoadedModel);
                     
                     // Destroy the current view.
-                    Object.Destroy(CurrentWindow.GameObject);
+                    Object.Destroy(CurrentView.GameObject);
                 }
             }
             
-            if (!TryShowWindowBy(modal, out var window))
+            if (!TryShowViewBy(model, out var view, overrideCanvasRoot))
             {
                 return;
             }
 
-            CurrentWindow = window;
-            showedPage = (IPage) window;
+            CurrentView = view;
+            showedPage = view;
         }
 
-        protected override bool TryShowWindowBy(TModal modal, out TPage createPage)
+        protected override bool TryShowViewBy(TModel model, out TPage createPage, RectTransform overrideCanvasRoot = null)
         {
-            var window = CreateWindowBy(modal);
-            createPage = window;
+            var view = CreateViewBy(model, overrideCanvasRoot);
+            createPage = view;
             return true;
         }
 
-        protected override void AddToCollection(IStackable windowOrModal)
+        protected override void AddToCollection(IStackable viewOrModel)
         {
-            WindowCollection.Push(windowOrModal);
+            ViewContainer.Push(viewOrModel);
         }
 
-        protected override bool TryRetrieveNextWindowOrModal(out IStackable nextWindowOrModal)
+        protected override bool TryRetrieveNextViewOrModel(out IStackable nextViewOrModel)
         {
-            nextWindowOrModal = null;
+            nextViewOrModel = null;
             
-            if (WindowCollection.Count == 0)
+            if (ViewContainer.Count == 0)
             {
                 return false;
             }
             
-            nextWindowOrModal = WindowCollection.Pop();
+            nextViewOrModel = ViewContainer.Pop();
             return true;
         }
     }

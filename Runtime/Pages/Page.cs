@@ -1,12 +1,11 @@
 namespace AYip.UI.Pages
 {
 	/// <summary>
-	/// The basic page window class.
+	/// The basic page view class.
 	/// </summary>
-	public abstract class Page<TPrefabKey, TPage, TModal> : Window<TPrefabKey, TPage, TModal>, IPage<TPrefabKey, TPage, TModal>
-		where TPage : IPage<TPrefabKey, TPage, TModal>
-		where TModal : IPageModal<TPrefabKey>
+	public abstract class Page<TPrefabKey, TModel> : View<TPrefabKey, TModel>, IPage<TPrefabKey, TModel>
+		where TModel : IPageModel<TPrefabKey>
 	{
-		public abstract bool IsProtected { get; }
+		public abstract bool IsProtected { get; protected set; }
 	}
 }

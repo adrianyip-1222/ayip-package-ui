@@ -3,7 +3,7 @@ namespace AYip.UI.Pages
 	/// <summary>
 	/// The base interface for all pages.
 	/// </summary>
-	public interface IPage : IWindow, IStackable
+	public interface IPage : IView, IStackable
 	{
 		/// <summary>
 		/// Indicates whether the page is protected from being destroyed when a new page is shown.
@@ -12,9 +12,8 @@ namespace AYip.UI.Pages
 	}
 
 	/// <summary>
-	/// A generic interface for pages with specified prefab key, page type, and modal type.
+	/// A generic interface for pages with specified prefab key, page type, and model type.
 	/// </summary>
-	public interface IPage<TPrefabKey, TPage, out TModal> : IPage, IWindow<TPrefabKey, TPage, TModal>
-		where TModal : IPageModal<TPrefabKey>
-		where TPage : IPage<TPrefabKey, TPage, TModal> { }
+	public interface IPage<TPrefabKey, out TModel> : IPage, IView<TPrefabKey, TModel>
+		where TModel : IPageModel<TPrefabKey> { }
 }
