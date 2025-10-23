@@ -1,11 +1,11 @@
 namespace AYip.UI
 {
-	public interface IWindowModal
+	public interface IViewModel
 	{
 		object PrefabKey { get; }
 	}
 
-	public interface IWindowModal<out TPrefabKey> : IWindowModal
+	public interface IViewModel<out TPrefabKey> : IViewModel
 	{
 		new TPrefabKey PrefabKey { get; }
 	}  
