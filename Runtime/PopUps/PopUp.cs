@@ -1,9 +1,7 @@
 namespace AYip.UI.PopUps
 {
 	/// <summary>
-	/// The basic pop-up window class.
+	/// The basic pop-up view class.
 	/// </summary>
-	public abstract class PopUp<TPrefabKey, TPopUp, TModal> : Window<TPrefabKey, TPopUp, TModal>, IPopUp<TPrefabKey, TPopUp, TModal>
-		where TPopUp : IPopUp<TPrefabKey, TPopUp, TModal>
-		where TModal : IPopUpModal<TPrefabKey> { }
+	public abstract class PopUp<TPrefabKey, TModel> : View<TPrefabKey, TModel>, IPopUp<TPrefabKey, TModel> where TModel : IPopUpModel<TPrefabKey> { }
 }

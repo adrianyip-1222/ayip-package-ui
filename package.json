@@ -8,7 +8,9 @@
     "changelogUrl": "https://github.com/adrianyip-1222/ayip-package-ui/blob/0.1.0/CHANGELOG.md",
     "licensesUrl": "https://github.com/adrianyip-1222/ayip-package-ui/blob/0.1.0/LICENSE",
     "dependencies":
-    {},
+    {
+        "com.adrianyip.foundation": "1.0.0"
+    },
     "keywords":
     [
         "pop",
@@ -21,13 +23,5 @@
         "name": "Yip Ka Ming",
         "email": "adrianyip1222@gmail.com",
         "url": "https://github.com/adrianyip-1222/"
-    },
-    "samples":
-    [
-        {
-            "displayName": "VContainer Support",
-            "description": "Import this package for the implementation of VContainer.",
-            "path": "Samples~/VContainer Support"
-        }
-    ]
+    }
 }

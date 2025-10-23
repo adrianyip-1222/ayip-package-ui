@@ -1,6 +1,6 @@
 namespace AYip.UI
 {
-    public enum WindowState
+    public enum ViewState
     {
         None,
         Opened,

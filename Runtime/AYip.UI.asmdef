@@ -1,6 +1,6 @@
 {
     "name": "AYip.UI",
-    "rootNamespace": "",
+    "rootNamespace": "AYip.UI",
     "references": [
         "AYip.Foundation"
     ],
