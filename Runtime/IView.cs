@@ -1,14 +1,19 @@
 using System;
-using UnityEngine;
 
 namespace AYip.UI
 {
+	/// <summary>
+	/// A view managed by a view manager. It is UI framework agnostic: the factory that spawned it owns its teardown.
+	/// </summary>
 	public interface IView : IEquatable<IView>
 	{
 		Guid Id { get; }
-		GameObject GameObject { get; }
 		IViewModel LoadedModel { get; }
 		bool Visibility { get; set; }
+
+		/// <summary>
+		/// Publish the closed state. The managing view manager then despawns the view through its factory.
+		/// </summary>
 		void Close();
 	}
 

@@ -1,14 +1,25 @@
 using System;
 using UnityEngine;
 
-namespace AYip.UI
+namespace AYip.UI.UGUI
 {
+	/// <summary>
+	/// The base of a uGUI view: a MonoBehaviour on a prefab spawned under a RectTransform.
+	/// </summary>
 	public abstract class View : MonoBehaviour, IView
 	{
 		public abstract Guid Id { get; }
-		public GameObject GameObject => gameObject;
 		public IViewModel LoadedModel { get; protected set; }
-		public bool Visibility { get; set; }
+
+		/// <summary>
+		/// Whether the GameObject of the view is active.
+		/// </summary>
+		public virtual bool Visibility
+		{
+			get => gameObject.activeSelf;
+			set => gameObject.SetActive(value);
+		}
+
 		public abstract void Close();
 		
 		public bool Equals(IView other)
@@ -29,10 +40,12 @@ namespace AYip.UI
 		}
 		IViewModel IView.LoadedModel => LoadedModel;
 
+		/// <summary>
+		/// Publish the closed state. The GameObject is destroyed by the factory, through the view manager.
+		/// </summary>
 		public override void Close()
 		{
 			PublishStateChangeEvent(ViewState.Closed);
-			Destroy(gameObject);
 		}
 	
 		/// <summary>

@@ -1,7 +1,9 @@
-namespace AYip.UI.Pages
+using AYip.UI.Pages;
+
+namespace AYip.UI.UGUI
 {
 	/// <summary>
-	/// The basic page view class.
+	/// The basic uGUI page view class.
 	/// </summary>
 	public abstract class Page<TPrefabKey, TModel> : View<TPrefabKey, TModel>, IPage<TPrefabKey, TModel>
 		where TModel : IPageModel<TPrefabKey>

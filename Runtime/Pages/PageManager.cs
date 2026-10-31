@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using AYip.UI.Events;
-using UnityEngine;
 
 namespace AYip.UI.Pages
 {
@@ -9,15 +8,16 @@ namespace AYip.UI.Pages
     /// This manager allows for showing pages immediately if no other page is currently active,
     /// or stacking them for later display if a page is already showing.
     /// </summary>
-    public abstract class PageManager<TPrefabKey, TPage, TModel> : ViewManager<TPrefabKey, TPage, Stack<IStackable>, IStackable, TModel>
+    public abstract class PageManager<TRoot, TPrefabKey, TPage, TModel> : ViewManager<TRoot, TPrefabKey, TPage, Stack<IStackable>, IStackable, TModel>
+        where TRoot : class
         where TPage : IPage<TPrefabKey, TModel>
         where TModel : IPageModel<TPrefabKey>
     {
         protected PageManager(
-            RectTransform defaultCanvasRoot,
+            TRoot defaultRoot,
             IHandler viewStateEventHandler,
-            IViewFactory viewFactory)
-            : base(defaultCanvasRoot, viewStateEventHandler, viewFactory)
+            IViewFactory<TRoot> viewFactory)
+            : base(defaultRoot, viewStateEventHandler, viewFactory)
         {
             ViewContainer = new Stack<IStackable>();
         }
@@ -31,9 +31,10 @@ namespace AYip.UI.Pages
         /// Show the page immediately and stack up the current page if any. (Show and forget pattern)
         /// </summary>
         /// <param name="model">The model of the page</param>
-        public void Show(TModel model, RectTransform overrideCanvasRoot = null)
+        /// <param name="overrideRoot">The root to override the default one.</param>
+        public void Show(TModel model, TRoot overrideRoot = null)
         {
-            Show(model, out _, overrideCanvasRoot);
+            Show(model, out _, overrideRoot);
         }
 		
         /// <summary>
@@ -41,7 +42,8 @@ namespace AYip.UI.Pages
         /// </summary>
         /// <param name="model">The model of the page</param>
         /// <param name="showedPage">The page to show.</param>
-        public void Show(TModel model, out IPage showedPage, RectTransform overrideCanvasRoot = null)
+        /// <param name="overrideRoot">The root to override the default one.</param>
+        public void Show(TModel model, out IPage showedPage, TRoot overrideRoot = null)
         {
             showedPage = null; 
             
@@ -51,18 +53,18 @@ namespace AYip.UI.Pages
                 // Handle how to stack up the current page.
                 if (CurrentView.IsProtected)
                 {
+                    // Keep the live page, deaf to its close until it is current again.
+                    ViewStateEventHandler.Unsubscribe(CurrentView);
                     AddToCollection(CurrentView);
                 }
                 else
                 {
                     AddToCollection(CurrentView.LoadedModel);
-                    
-                    // Destroy the current view.
-                    Object.Destroy(CurrentView.GameObject);
+                    DespawnView(CurrentView);
                 }
             }
             
-            if (!TryShowViewBy(model, out var view, overrideCanvasRoot))
+            if (!TryShowViewBy(model, out var view, overrideRoot))
             {
                 return;
             }
@@ -71,9 +73,9 @@ namespace AYip.UI.Pages
             showedPage = view;
         }
 
-        protected override bool TryShowViewBy(TModel model, out TPage createPage, RectTransform overrideCanvasRoot = null)
+        protected override bool TryShowViewBy(TModel model, out TPage createPage, TRoot overrideRoot = null)
         {
-            var view = CreateViewBy(model, overrideCanvasRoot);
+            var view = CreateViewBy(model, overrideRoot);
             createPage = view;
             return true;
         }
