@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using AYip.UI.Events;
-using UnityEngine;
 
 namespace AYip.UI.PopUps
 {
@@ -9,15 +8,16 @@ namespace AYip.UI.PopUps
     /// This manager allows for showing pop-ups immediately if no other pop-up is currently active,
     /// or queuing them for later display if a pop-up is already showing.
     /// </summary>
-    public abstract class PopUpManager<TPrefabKey, TPopUp, TModel> : ViewManager<TPrefabKey, TPopUp, Queue<IQueueable>, IQueueable, TModel>
+    public abstract class PopUpManager<TRoot, TPrefabKey, TPopUp, TModel> : ViewManager<TRoot, TPrefabKey, TPopUp, Queue<IQueueable>, IQueueable, TModel>
+        where TRoot : class
         where TPopUp : IPopUp<TPrefabKey, TModel>
         where TModel : IPopUpModel<TPrefabKey>
     {
         protected PopUpManager(
-            RectTransform defaultCanvasRoot,
+            TRoot defaultRoot,
             IHandler viewStateEventHandler,
-            IViewFactory viewFactory)
-            : base(defaultCanvasRoot, viewStateEventHandler, viewFactory)
+            IViewFactory<TRoot> viewFactory)
+            : base(defaultRoot, viewStateEventHandler, viewFactory)
         {
             ViewContainer = new Queue<IQueueable>();
         }
@@ -28,11 +28,11 @@ namespace AYip.UI.PopUps
         /// Attempts to show the pop-up by its model immediately or enqueue it if there is a pop-up already showing (show and forget).
         /// </summary>
         /// <param name="model">The model of the pop-up</param>
-        /// <param name="overrideCanvasRoot">The canvas root to override the default one.</param>
+        /// <param name="overrideRoot">The root to override the default one.</param>
         /// <returns>If the pop-up was shown immediately.</returns>
-        public bool TryShowOrEnqueue(TModel model, RectTransform overrideCanvasRoot = null)
+        public bool TryShowOrEnqueue(TModel model, TRoot overrideRoot = null)
         {
-            return TryShowOrEnqueue(model, out _, overrideCanvasRoot);
+            return TryShowOrEnqueue(model, out _, overrideRoot);
         }
 
         /// <summary>
@@ -40,12 +40,12 @@ namespace AYip.UI.PopUps
         /// </summary>
         /// <param name="model">The model of the pop-up</param>
         /// <param name="createdPopUp">The created pop-up if it can be shown immediately, otherwise default.</param>
-        /// <param name="overrideCanvasRoot">The canvas root to override the default one.</param>
+        /// <param name="overrideRoot">The root to override the default one.</param>
         /// <returns>If the pop-up was shown immediately.</returns>
-        public bool TryShowOrEnqueue(TModel model, out IPopUp createdPopUp, RectTransform overrideCanvasRoot = null)
+        public bool TryShowOrEnqueue(TModel model, out IPopUp createdPopUp, TRoot overrideRoot = null)
         {
             createdPopUp = null;
-            if (!TryShowViewBy(model, out var view, overrideCanvasRoot))
+            if (!TryShowViewBy(model, out var view, overrideRoot))
             {
                 return false;
             }
@@ -56,7 +56,7 @@ namespace AYip.UI.PopUps
 
         /// <summary>
         /// Force show a pop-up. Typically used for critical pop-ups that must be shown immediately.
-        /// The pop-up won't be enqueued, which needs manually handling the lifecycle.
+        /// The pop-up won't be enqueued and never becomes the current pop-up; closing it only despawns it.
         /// </summary>
         /// <param name="model">The model of the pop-up</param>
         public T ForceShow<T>(TModel model) where T: TPopUp
@@ -65,7 +65,7 @@ namespace AYip.UI.PopUps
             return (T) popUp;
         }
         
-        protected override bool TryShowViewBy(TModel model, out TPopUp createdPopUp, RectTransform overrideCanvasRoot = null)
+        protected override bool TryShowViewBy(TModel model, out TPopUp createdPopUp, TRoot overrideRoot = null)
         {
             createdPopUp = default;
 			
@@ -76,8 +76,8 @@ namespace AYip.UI.PopUps
                 return false;
             }
 
-            var baseView = CreateViewBy(model, overrideCanvasRoot);
-            CurrentView = baseView;
+            createdPopUp = CreateViewBy(model, overrideRoot);
+            CurrentView = createdPopUp;
             return true;
         }
 
